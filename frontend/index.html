@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ESG Insight Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-80 border-r border-slate-800 bg-slate-950/80 px-4 py-6 flex flex-col gap-6">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight">ESG Insight Assistant</h1>
+        <p class="text-xs text-slate-400 mt-1">Upload ESG reports, ask questions, and generate summaries, metrics & risk insights.</p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-xs space-y-1.5">
+        <div class="font-semibold text-slate-100 mb-1">How it works</div>
+        <p><span class="font-semibold text-emerald-400">1.</span> Upload ESG report (PDF or text)</p>
+        <p><span class="font-semibold text-emerald-400">2.</span> AI reads and indexes the document</p>
+        <p><span class="font-semibold text-emerald-400">3.</span> Ask questions, extract metrics, run compliance & risk</p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold">Upload ESG report</h2>
+          <span id="uploadStatus" class="text-[10px] text-slate-400"></span>
+        </div>
+        <label class="flex flex-col items-center justify-center border border-dashed border-slate-700 rounded-xl py-6 cursor-pointer hover:border-emerald-400 transition">
+          <input id="fileInput" type="file" multiple class="hidden" />
+          <span class="text-xs text-slate-300">Drop files here or click to browse</span>
+          <span class="text-[10px] text-slate-500 mt-1">PDF or .txt ESG reports</span>
+        </label>
+        <button id="uploadBtn" class="w-full text-xs px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          Upload & analyze
+        </button>
+        <button id="sampleBtn" class="w-full text-[11px] px-3 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300 transition">
+          Try with sample ESG report
+        </button>
+        <p id="uploadProgress" class="text-[11px] text-slate-400 mt-1"></p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold">Your reports</h2>
+          <button id="refreshReports" class="text-[10px] text-emerald-300 hover:text-emerald-200">Refresh</button>
+        </div>
+        <div id="reportsList" class="space-y-1 text-xs max-h-40 overflow-y-auto pr-1"></div>
+        <div class="mt-3 border-t border-slate-800 pt-2">
+          <div class="text-[11px] text-slate-400 mb-1">Preview extracted text</div>
+          <div id="previewBox" class="text-[11px] text-slate-300 bg-slate-950/60 border border-slate-800 rounded-xl p-2 h-32 overflow-y-auto whitespace-pre-wrap">No report selected yet.</div>
+        </div>
+      </div>
+      <div class="hidden md:block bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-1.5">
+        <div class="font-semibold text-slate-100 mb-1">Example questions</div>
+        <p>• What are the Scope 1, 2 and 3 emissions?</p>
+        <p>• Does this company reference GRI or IFRS S2?</p>
+        <p>• What climate risks are mentioned?</p>
+        <p>• Summarise environmental performance in one paragraph.</p>
+      </div>
+    </aside>
+    <main class="flex-1 flex flex-col px-4 md:px-6 py-4 gap-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-500">Dashboard</div>
+          <h2 class="text-lg font-semibold">ESG insights workspace</h2>
+        </div>
+        <div class="flex items-center gap-2 text-[11px] text-slate-400">
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Gemini + RAG active
+          </span>
+        </div>
+      </div>
+      <div class="border-b border-slate-800 text-xs flex gap-4">
+        <button data-tab="chat" class="tab-btn border-b-2 border-emerald-400 text-emerald-300 pb-2">Chat</button>
+        <button data-tab="summary" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Summary & compliance</button>
+        <button data-tab="metrics" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Metrics & risk</button>
+      </div>
+      <section id="tab-chat" class="flex-1 flex flex-col gap-3">
+        <div id="chatWindow" class="flex-1 min-h-[220px] max-h-[380px] overflow-y-auto bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-3 text-xs">
+          <div class="text-slate-400 text-[11px]">
+            Upload or select a report on the left, then ask ESG questions here. I&apos;ll answer using only the uploaded document and show citations.
+          </div>
+        </div>
+        <form id="chatForm" class="flex items-end gap-2 text-xs mt-1">
+          <textarea id="chatInput" rows="2" class="flex-1 rounded-2xl bg-slate-900/70 border border-slate-700 px-3 py-2 outline-none focus:border-emerald-400 text-xs" placeholder="Ask something like: What are the main ESG risks mentioned?"></textarea>
+          <button class="px-3 py-2 rounded-2xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed">
+            Send
+          </button>
+        </form>
+      </section>
+      <section id="tab-summary" class="hidden flex-1 grid md:grid-cols-2 gap-3 text-xs">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold">Executive ESG summary</h3>
+            <div class="flex gap-2">
+              <button id="generateSummaryBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50">
+                Generate summary
+              </button>
+              <button id="downloadSummaryBtn" class="px-2 py-1 rounded-xl border border-slate-700 text-[11px] text-slate-200 hover:border-emerald-400 hover:text-emerald-300 disabled:opacity-50">
+                Download PDF
+              </button>
+            </div>
+          </div>
+          <div id="summaryBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto whitespace-pre-wrap text-[11px] text-slate-200">
+            No summary yet. Select a report and click "Generate summary".
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-sm font-semibold">Compliance checker</h3>
+              <button id="runComplianceBtn" class="px-2 py-1 rounded-xl bg-slate-100 text-slate-900 text-[11px] font-semibold hover:bg-slate-200 disabled:opacity-50">
+                Run check
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-2">Checks whether the report references SDGs, GRI, SASB, IFRS S1 and IFRS S2.</p>
+            <div id="complianceBox" class="text-[11px] space-y-2"></div>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-sm font-semibold">Greenwashing risk</h3>
+              <button id="runRiskBtn" class="px-2 py-1 rounded-xl bg-slate-100 text-slate-900 text-[11px] font-semibold hover:bg-slate-200 disabled:opacity-50">
+                Assess risk
+              </button>
+            </div>
+            <div id="riskBox" class="text-[11px] text-slate-200 space-y-1">
+              <p class="text-slate-400 text-[11px]">Run the assessment to see a simple Low / Medium / High signal with a short explanation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="tab-metrics" class="hidden flex-1 grid md:grid-cols-2 gap-3 text-xs">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold">ESG metrics extraction</h3>
+            <button id="extractMetricsBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50">
+              Extract metrics
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-2">Structured extraction of key metrics like emissions, energy, water, waste, employees and governance.</p>
+          <pre id="metricsBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto text-[11px] text-emerald-200 whitespace-pre-wrap">No metrics extracted yet.</pre>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-2">
+          <h3 class="text-sm font-semibold mb-1">How analysts can use this</h3>
+          <p>• Copy metrics directly into spreadsheets or ESG templates.</p>
+          <p>• Use Chat tab to ask: <span class="text-emerald-300">"Explain changes in emissions year-on-year"</span>.</p>
+          <p>• Use Summary tab to create executive summaries for investment memos or client decks.</p>
+          <p>• Combine compliance + risk insights to sanity check green claims and disclosures.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="assets/script.js"></script>
+</body>
+</html>

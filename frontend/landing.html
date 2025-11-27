@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ESG Insight Assistant – AI ESG Report Analysis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-50">
+  <!-- Page wrapper -->
+  <div class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-950 font-extrabold text-xs">
+            ESG
+          </div>
+          <div>
+            <div class="text-sm font-semibold tracking-tight">ESG Insight Assistant</div>
+            <div class="text-[11px] text-slate-400">AI for sustainability & impact reports</div>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-[13px] text-slate-300">
+          <a href="#features" class="hover:text-emerald-300">Features</a>
+          <a href="#pricing" class="hover:text-emerald-300">Pricing</a>
+          <a href="#faq" class="hover:text-emerald-300">FAQ</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <!-- Link this to your app (index.html or app.html) -->
+          <a href="index.html" class="hidden md:inline-block text-[12px] px-3 py-1.5 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+            Launch app
+          </a>
+          <a href="#pricing" class="text-[12px] px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400">
+            View pricing
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <main class="flex-1">
+      <section class="border-b border-slate-800 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900">
+        <div class="max-w-6xl mx-auto px-4 py-10 lg:py-16 grid lg:grid-cols-[1.15fr,0.9fr] gap-10 items-center">
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/5 px-3 py-1 text-[11px] text-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Built on Gemini + RAG · Designed for ESG teams
+            </div>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
+              Turn ESG reports into instant, explainable insights.
+            </h1>
+            <p class="text-sm text-slate-300 max-w-xl">
+              Upload any sustainability or ESG report. The assistant reads it for you, extracts key metrics,
+              checks disclosures, and answers questions with citations — in seconds, not days.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+              <a href="index.html" class="inline-flex items-center justify-center px-4 py-2.5 rounded-2xl bg-emerald-500 text-slate-950 text-sm font-semibold hover:bg-emerald-400">
+                Launch ESG Assistant
+              </a>
+              <a href="#pricing" class="inline-flex items-center justify-center px-3 py-2 rounded-2xl border border-slate-700 text-[13px] text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+                View pricing plans
+              </a>
+            </div>
+            <div class="flex flex-wrap gap-4 text-[11px] text-slate-400">
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Ideal for analysts, ESG officers, investors & consultants
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> No technical setup · Works in your browser
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero "UI" mock -->
+          <div class="bg-slate-900/70 border border-slate-800 rounded-3xl p-4 shadow-xl shadow-emerald-500/5 text-xs space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-2xl bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-[11px] text-emerald-200 font-semibold">
+                  ESG
+                </div>
+                <div>
+                  <div class="text-[12px] font-semibold">DemoCo Sustainability Report 2023</div>
+                  <div class="text-[10px] text-slate-400">Indexed · 118 pages · Gemini RAG</div>
+                </div>
+              </div>
+              <span class="text-[10px] text-emerald-300">Ready</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-[10px]">
+              <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-2">
+                <div class="text-slate-400 mb-1">Scope 1</div>
+                <div class="text-emerald-300 font-semibold">120,000 tCO₂e</div>
+              </div>
+              <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-2">
+                <div class="text-slate-400 mb-1">Scope 2</div>
+                <div class="text-emerald-300 font-semibold">80,000 tCO₂e</div>
+              </div>
+              <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-2">
+                <div class="text-slate-400 mb-1">Water</div>
+                <div class="text-emerald-300 font-semibold">98,000 m³</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
+              <div class="text-[10px] text-slate-400">Question</div>
+              <div class="text-[11px]">
+                “What are the main climate risks mentioned, and how does the board oversee them?”
+              </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="text-[10px] text-slate-400">AI Answer</div>
+                <div class="text-[10px] text-emerald-300">Backed by 4 citations</div>
+              </div>
+              <div class="text-[11px] text-slate-100">
+                The company identifies transition and physical climate risks, including carbon pricing,
+                regulatory changes and extreme weather events impacting assets in West Africa. The board
+                has formal oversight via a sustainability committee that meets quarterly to review climate
+                metrics, risk registers and progress against the net-zero 2050 target. <span class="text-slate-400">[1][3]</span>
+              </div>
+            </div>
+
+            <div class="flex gap-2 text-[10px]">
+              <div class="flex-1 bg-slate-950/70 border border-slate-800 rounded-2xl p-2">
+                <div class="text-slate-400 mb-0.5">Compliance</div>
+                <div class="flex flex-wrap gap-1">
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">SDGs</span>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">GRI</span>
+                  <span class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-600">IFRS S2 (partial)</span>
+                </div>
+              </div>
+              <div class="w-32 bg-slate-950/70 border border-slate-800 rounded-2xl p-2 flex flex-col justify-between">
+                <div class="text-slate-400 mb-1">Greenwashing risk</div>
+                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/60">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  Low
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logos / “built for” -->
+      <section class="border-b border-slate-800 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4 py-6 flex flex-wrap items-center gap-4 text-[11px] text-slate-400">
+          <span class="uppercase tracking-[0.2em] text-slate-500 text-[10px]">
+            Built for
+          </span>
+          <span class="px-2 py-1 rounded-full border border-slate-800 bg-slate-900/60">ESG & sustainability teams</span>
+          <span class="px-2 py-1 rounded-full border border-slate-800 bg-slate-900/60">Impact & climate investors</span>
+          <span class="px-2 py-1 rounded-full border border-slate-800 bg-slate-900/60">ESG / climate consultants</span>
+          <span class="px-2 py-1 rounded-full border border-slate-800 bg-slate-900/60">Africa-focused SMEs & funds</span>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="border-b border-slate-800 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight">Everything ESG teams need in one assistant</h2>
+              <p class="text-sm text-slate-400 max-w-xl mt-1">
+                No more digging through 200-page PDFs. The assistant reads reports end-to-end and turns them into structured,
+                explainable insights you can trust.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-4 text-sm">
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-2">
+              <div class="text-xs font-semibold text-emerald-300">1 · Upload & indexing</div>
+              <h3 class="text-sm font-semibold">Read ESG reports automatically</h3>
+              <p class="text-slate-400 text-[13px]">
+                Upload any ESG, climate or impact report. The assistant extracts the text, chunks it, and builds
+                a searchable knowledge base for you.
+              </p>
+              <ul class="text-[12px] text-slate-400 space-y-1 mt-2">
+                <li>• Works with PDF and .txt</li>
+                <li>• Handles long reports (annual ESG, sustainability, impact)</li>
+                <li>• Prepared in the background — no manual steps</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-2">
+              <div class="text-xs font-semibold text-emerald-300">2 · Q&A + summaries</div>
+              <h3 class="text-sm font-semibold">Ask questions with citations</h3>
+              <p class="text-slate-400 text-[13px]">
+                Ask natural-language questions. The answer is generated from the report only, with citations to exact
+                sections and pages.
+              </p>
+              <ul class="text-[12px] text-slate-400 space-y-1 mt-2">
+                <li>• “What are the Scope 1, 2 and 3 emissions?”</li>
+                <li>• “Does the company report on SDG 13?”</li>
+                <li>• “What ESG risks are identified?”</li>
+              </ul>
+            </div>
+
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-2">
+              <div class="text-xs font-semibold text-emerald-300">3 · Metrics, compliance & risk</div>
+              <h3 class="text-sm font-semibold">Structured ESG analysis in seconds</h3>
+              <p class="text-slate-400 text-[13px]">
+                Extract key metrics, run a quick compliance pass, and get a simple greenwashing risk signal you can
+                sanity-check.
+              </p>
+              <ul class="text-[12px] text-slate-400 space-y-1 mt-2">
+                <li>• Emissions, energy, water, waste, employees</li>
+                <li>• SDGs, GRI, SASB, IFRS S1/S2 coverage</li>
+                <li>• Greenwashing risk: Low / Medium / High</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing -->
+      <section id="pricing" class="border-b border-slate-800 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight">Simple pricing for serious ESG work</h2>
+              <p class="text-sm text-slate-400 max-w-xl mt-1">
+                Start free, then upgrade when you’re ready to use the assistant in client work, internal reporting
+                or due diligence workflows.
+              </p>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Pricing in USD. Custom discounts available for African SMEs, funds and universities.
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-4 gap-4 text-sm">
+            <!-- Free -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col">
+              <div class="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">Starter</div>
+              <h3 class="text-sm font-semibold mb-1">Free</h3>
+              <div class="flex items-baseline gap-1 mb-4">
+                <span class="text-2xl font-semibold">$0</span>
+                <span class="text-[11px] text-slate-400">per month</span>
+              </div>
+              <ul class="text-[12px] text-slate-300 space-y-1 flex-1">
+                <li>• 3 reports per month</li>
+                <li>• Basic Q&A chat</li>
+                <li>• Executive summary for each report</li>
+                <li>• ESG metrics extraction (limited)</li>
+                <li>• Email support (best effort)</li>
+              </ul>
+              <button class="mt-4 w-full text-[12px] px-3 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+                Get started free
+              </button>
+            </div>
+
+            <!-- Analyst -->
+            <div class="bg-slate-900/80 border border-emerald-500/70 rounded-2xl p-4 flex flex-col relative overflow-hidden">
+              <div class="absolute inset-x-0 -top-6 h-12 bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+              <div class="text-[11px] uppercase tracking-[0.18em] text-emerald-300 mb-1">Most popular</div>
+              <h3 class="text-sm font-semibold mb-1">Analyst</h3>
+              <div class="flex items-baseline gap-1 mb-4">
+                <span class="text-2xl font-semibold">$29</span>
+                <span class="text-[11px] text-slate-400">per analyst / month</span>
+              </div>
+              <ul class="text-[12px] text-slate-100 space-y-1 flex-1">
+                <li>• Up to 30 reports / month</li>
+                <li>• Full Q&A chat with citations</li>
+                <li>• Unlimited summaries</li>
+                <li>• Full ESG metrics extraction</li>
+                <li>• Compliance & greenwashing risk</li>
+                <li>• Priority email support</li>
+              </ul>
+              <button class="mt-4 w-full text-[12px] px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400">
+                Start with Analyst
+              </button>
+            </div>
+
+            <!-- Consultant -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col">
+              <div class="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">Consultants</div>
+              <h3 class="text-sm font-semibold mb-1">Consultant</h3>
+              <div class="flex items-baseline gap-1 mb-4">
+                <span class="text-2xl font-semibold">$79</span>
+                <span class="text-[11px] text-slate-400">per seat / month</span>
+              </div>
+              <ul class="text-[12px] text-slate-300 space-y-1 flex-1">
+                <li>• 100+ reports / month</li>
+                <li>• Multi-client workspaces</li>
+                <li>• Export metrics to CSV/Excel</li>
+                <li>• Branded summaries for clients</li>
+                <li>• Priority support & onboarding</li>
+              </ul>
+              <button class="mt-4 w-full text-[12px] px-3 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+                Talk to us
+              </button>
+            </div>
+
+            <!-- Team / Enterprise -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col">
+              <div class="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-1">Teams & Enterprise</div>
+              <h3 class="text-sm font-semibold mb-1">Custom</h3>
+              <div class="flex items-baseline gap-1 mb-4">
+                <span class="text-2xl font-semibold">Let’s talk</span>
+              </div>
+              <ul class="text-[12px] text-slate-300 space-y-1 flex-1">
+                <li>• Larger ESG / sustainability teams</li>
+                <li>• Bulk report analysis & APIs</li>
+                <li>• SSO, security reviews & SLAs</li>
+                <li>• Custom training & tuning</li>
+                <li>• White-labelling for platforms</li>
+              </ul>
+              <button class="mt-4 w-full text-[12px] px-3 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+                Contact sales
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="bg-slate-950 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 py-10 space-y-6">
+          <div>
+            <h2 class="text-xl font-semibold tracking-tight">Frequently asked questions</h2>
+            <p class="text-sm text-slate-400 max-w-xl mt-1">
+              A few quick answers. You can always reach out to ask about custom use cases, ESG frameworks
+              or integrations.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-1.5">
+              <h3 class="font-semibold text-[13px]">Does the assistant hallucinate or make up data?</h3>
+              <p class="text-[13px] text-slate-400">
+                The ESG assistant is built with a RAG (retrieval-augmented generation) approach. It answers
+                based only on the uploaded report, and is instructed to say “not disclosed” when data is not
+                clearly present in the document.
+              </p>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-1.5">
+              <h3 class="font-semibold text-[13px]">Which ESG frameworks can it help with?</h3>
+              <p class="text-[13px] text-slate-400">
+                Today the assistant recognises SDGs, GRI, SASB and IFRS S1/S2. It can highlight when these are
+                mentioned or partially covered in the report, and surface relevant sections you can review.
+              </p>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-1.5">
+              <h3 class="font-semibold text-[13px]">Is this suitable for Africa-focused ESG work?</h3>
+              <p class="text-[13px] text-slate-400">
+                Yes. The assistant is designed with emerging markets and African sustainability contexts in
+                mind — including energy, infrastructure, agriculture and financial inclusion.
+              </p>
+            </div>
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-1.5">
+              <h3 class="font-semibold text-[13px]">Can I use this in client work?</h3>
+              <p class="text-[13px] text-slate-400">
+                Absolutely. Many users treat the assistant as a first-pass analyst: it reads the report, surfaces
+                metrics and risks, and you apply your professional judgement on top.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4 py-10 md:py-12 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-semibold tracking-tight">Ready to stop reading ESG PDFs manually?</h2>
+            <p class="text-sm text-slate-400 max-w-xl mt-1">
+              Upload your next ESG report, generate a summary, extract key metrics and run a compliance check —
+              in one place.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="index.html" class="inline-flex items-center justify-center px-4 py-2.5 rounded-2xl bg-emerald-500 text-slate-950 text-sm font-semibold hover:bg-emerald-400">
+              Launch ESG Assistant
+            </a>
+            <a href="#pricing" class="inline-flex items-center justify-center px-3 py-2 rounded-2xl border border-slate-700 text-[13px] text-slate-200 hover:border-emerald-400 hover:text-emerald-300">
+              Review plans
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950">
+      <div class="max-w-6xl mx-auto px-4 py-4 text-[11px] text-slate-500 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+        <div>© <span id="yearSpan"></span> ESG Insight Assistant. All rights reserved.</div>
+        <div class="flex flex-wrap gap-3">
+          <span>Built with Gemini + FastAPI + Tailwind.</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // simple year
+    document.getElementById("yearSpan").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
