@@ -4,53 +4,60 @@
   <meta charset="UTF-8" />
   <title>ESG Insight Assistant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Custom CSS on top of Tailwind -->
+  <link rel="stylesheet" href="assets/styles.css" />
+  <!-- jsPDF for summary download -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <aside class="w-full md:w-80 border-r border-slate-800 bg-slate-950/80 px-4 py-6 flex flex-col gap-6">
+    <aside class="w-full md:w-80 border-r border-slate-800 bg-slate-950/80 px-4 py-6 flex flex-col gap-6 backdrop-blur-md">
       <div>
-        <h1 class="text-xl font-semibold tracking-tight">ESG Insight Assistant</h1>
-        <p class="text-xs text-slate-400 mt-1">Upload ESG reports, ask questions, and generate summaries, metrics & risk insights.</p>
+        <h1 class="text-xl font-semibold tracking-tight flex items-center gap-2">
+          <span class="inline-flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-[11px] font-bold">ESG</span>
+          <span>ESG Insight Assistant</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Upload ESG reports, ask questions, and generate summaries, metrics &amp; risk insights.</p>
       </div>
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-xs space-y-1.5">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-xs space-y-1.5 shadow-soft glass-panel">
         <div class="font-semibold text-slate-100 mb-1">How it works</div>
         <p><span class="font-semibold text-emerald-400">1.</span> Upload ESG report (PDF or text)</p>
         <p><span class="font-semibold text-emerald-400">2.</span> AI reads and indexes the document</p>
-        <p><span class="font-semibold text-emerald-400">3.</span> Ask questions, extract metrics, run compliance & risk</p>
+        <p><span class="font-semibold text-emerald-400">3.</span> Ask questions, extract metrics, run compliance &amp; risk</p>
       </div>
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-soft glass-panel">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-semibold">Upload ESG report</h2>
           <span id="uploadStatus" class="text-[10px] text-slate-400"></span>
         </div>
-        <label class="flex flex-col items-center justify-center border border-dashed border-slate-700 rounded-xl py-6 cursor-pointer hover:border-emerald-400 transition">
+        <label class="flex flex-col items-center justify-center border border-dashed border-slate-700 rounded-xl py-6 cursor-pointer hover:border-emerald-400 transition file-drop">
           <input id="fileInput" type="file" multiple class="hidden" />
           <span class="text-xs text-slate-300">Drop files here or click to browse</span>
           <span class="text-[10px] text-slate-500 mt-1">PDF or .txt ESG reports</span>
         </label>
-        <button id="uploadBtn" class="w-full text-xs px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Upload & analyze
+        <button id="uploadBtn" class="w-full text-xs px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-soft">
+          Upload &amp; analyze
         </button>
         <button id="sampleBtn" class="w-full text-[11px] px-3 py-2 rounded-xl border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300 transition">
           Try with sample ESG report
         </button>
         <p id="uploadProgress" class="text-[11px] text-slate-400 mt-1"></p>
       </div>
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex-1 flex flex-col">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex-1 flex flex-col shadow-soft glass-panel">
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-sm font-semibold">Your reports</h2>
           <button id="refreshReports" class="text-[10px] text-emerald-300 hover:text-emerald-200">Refresh</button>
         </div>
-        <div id="reportsList" class="space-y-1 text-xs max-h-40 overflow-y-auto pr-1"></div>
+        <div id="reportsList" class="space-y-1 text-xs max-h-40 overflow-y-auto pr-1 custom-scroll"></div>
         <div class="mt-3 border-t border-slate-800 pt-2">
           <div class="text-[11px] text-slate-400 mb-1">Preview extracted text</div>
-          <div id="previewBox" class="text-[11px] text-slate-300 bg-slate-950/60 border border-slate-800 rounded-xl p-2 h-32 overflow-y-auto whitespace-pre-wrap">No report selected yet.</div>
+          <div id="previewBox" class="text-[11px] text-slate-300 bg-slate-950/60 border border-slate-800 rounded-xl p-2 h-32 overflow-y-auto whitespace-pre-wrap custom-scroll">No report selected yet.</div>
         </div>
       </div>
-      <div class="hidden md:block bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-1.5">
+      <div class="hidden md:block bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-1.5 shadow-soft glass-panel">
         <div class="font-semibold text-slate-100 mb-1">Example questions</div>
         <p>• What are the Scope 1, 2 and 3 emissions?</p>
         <p>• Does this company reference GRI or IFRS S2?</p>
@@ -65,7 +72,7 @@
           <h2 class="text-lg font-semibold">ESG insights workspace</h2>
         </div>
         <div class="flex items-center gap-2 text-[11px] text-slate-400">
-          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
+          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/40 chip-live">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             Gemini + RAG active
           </span>
@@ -73,28 +80,28 @@
       </div>
       <div class="border-b border-slate-800 text-xs flex gap-4">
         <button data-tab="chat" class="tab-btn border-b-2 border-emerald-400 text-emerald-300 pb-2">Chat</button>
-        <button data-tab="summary" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Summary & compliance</button>
-        <button data-tab="metrics" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Metrics & risk</button>
+        <button data-tab="summary" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Summary &amp; compliance</button>
+        <button data-tab="metrics" class="tab-btn pb-2 text-slate-400 hover:text-slate-100">Metrics &amp; risk</button>
       </div>
       <section id="tab-chat" class="flex-1 flex flex-col gap-3">
-        <div id="chatWindow" class="flex-1 min-h-[220px] max-h-[380px] overflow-y-auto bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-3 text-xs">
+        <div id="chatWindow" class="flex-1 min-h-[220px] max-h-[380px] overflow-y-auto bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-3 text-xs custom-scroll shadow-soft glass-panel">
           <div class="text-slate-400 text-[11px]">
             Upload or select a report on the left, then ask ESG questions here. I&apos;ll answer using only the uploaded document and show citations.
           </div>
         </div>
         <form id="chatForm" class="flex items-end gap-2 text-xs mt-1">
-          <textarea id="chatInput" rows="2" class="flex-1 rounded-2xl bg-slate-900/70 border border-slate-700 px-3 py-2 outline-none focus:border-emerald-400 text-xs" placeholder="Ask something like: What are the main ESG risks mentioned?"></textarea>
-          <button class="px-3 py-2 rounded-2xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed">
+          <textarea id="chatInput" rows="2" class="flex-1 rounded-2xl bg-slate-900/70 border border-slate-700 px-3 py-2 outline-none focus:border-emerald-400 text-xs custom-scroll" placeholder="Ask something like: What are the main ESG risks mentioned?"></textarea>
+          <button class="px-3 py-2 rounded-2xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-soft">
             Send
           </button>
         </form>
       </section>
       <section id="tab-summary" class="hidden flex-1 grid md:grid-cols-2 gap-3 text-xs">
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col shadow-soft glass-panel">
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-sm font-semibold">Executive ESG summary</h3>
             <div class="flex gap-2">
-              <button id="generateSummaryBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50">
+              <button id="generateSummaryBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50 shadow-soft">
                 Generate summary
               </button>
               <button id="downloadSummaryBtn" class="px-2 py-1 rounded-xl border border-slate-700 text-[11px] text-slate-200 hover:border-emerald-400 hover:text-emerald-300 disabled:opacity-50">
@@ -102,12 +109,12 @@
               </button>
             </div>
           </div>
-          <div id="summaryBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto whitespace-pre-wrap text-[11px] text-slate-200">
+          <div id="summaryBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto whitespace-pre-wrap text-[11px] text-slate-200 custom-scroll">
             No summary yet. Select a report and click "Generate summary".
           </div>
         </div>
         <div class="space-y-3">
-          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 shadow-soft glass-panel">
             <div class="flex items-center justify-between mb-1">
               <h3 class="text-sm font-semibold">Compliance checker</h3>
               <button id="runComplianceBtn" class="px-2 py-1 rounded-xl bg-slate-100 text-slate-900 text-[11px] font-semibold hover:bg-slate-200 disabled:opacity-50">
@@ -117,7 +124,7 @@
             <p class="text-[11px] text-slate-400 mb-2">Checks whether the report references SDGs, GRI, SASB, IFRS S1 and IFRS S2.</p>
             <div id="complianceBox" class="text-[11px] space-y-2"></div>
           </div>
-          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 shadow-soft glass-panel">
             <div class="flex items-center justify-between mb-1">
               <h3 class="text-sm font-semibold">Greenwashing risk</h3>
               <button id="runRiskBtn" class="px-2 py-1 rounded-xl bg-slate-100 text-slate-900 text-[11px] font-semibold hover:bg-slate-200 disabled:opacity-50">
@@ -131,17 +138,17 @@
         </div>
       </section>
       <section id="tab-metrics" class="hidden flex-1 grid md:grid-cols-2 gap-3 text-xs">
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col shadow-soft glass-panel">
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-sm font-semibold">ESG metrics extraction</h3>
-            <button id="extractMetricsBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50">
+            <button id="extractMetricsBtn" class="px-2 py-1 rounded-xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 disabled:opacity-50 shadow-soft">
               Extract metrics
             </button>
           </div>
           <p class="text-[11px] text-slate-400 mb-2">Structured extraction of key metrics like emissions, energy, water, waste, employees and governance.</p>
-          <pre id="metricsBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto text-[11px] text-emerald-200 whitespace-pre-wrap">No metrics extracted yet.</pre>
+          <pre id="metricsBox" class="flex-1 bg-slate-950/60 border border-slate-800 rounded-xl p-2 overflow-y-auto text-[11px] text-emerald-200 whitespace-pre-wrap custom-scroll">No metrics extracted yet.</pre>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-2">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 text-[11px] space-y-2 shadow-soft glass-panel">
           <h3 class="text-sm font-semibold mb-1">How analysts can use this</h3>
           <p>• Copy metrics directly into spreadsheets or ESG templates.</p>
           <p>• Use Chat tab to ask: <span class="text-emerald-300">"Explain changes in emissions year-on-year"</span>.</p>
