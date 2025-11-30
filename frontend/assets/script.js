@@ -1,38 +1,33 @@
 const API_BASE = "https://esg-analyzer.onrender.com";
+
 let selectedReportId = null;
-let currentSummaryText = "";
+let reportsCache = [];
 
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabChat = document.getElementById("tab-chat");
-const tabSummary = document.getElementById("tab-summary");
-const tabMetrics = document.getElementById("tab-metrics");
-
-tabButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const tab = btn.getAttribute("data-tab");
-    tabButtons.forEach(b => {
-      b.classList.remove("border-b-2", "border-emerald-400", "text-emerald-300");
-      b.classList.add("text-slate-400");
-    });
-    btn.classList.add("border-b-2", "border-emerald-400", "text-emerald-300");
-    btn.classList.remove("text-slate-400");
-    tabChat.classList.add("hidden");
-    tabSummary.classList.add("hidden");
-    tabMetrics.classList.add("hidden");
-    if (tab === "chat") tabChat.classList.remove("hidden");
-    if (tab === "summary") tabSummary.classList.remove("hidden");
-    if (tab === "metrics") tabMetrics.classList.remove("hidden");
+// ---------- Helper: simple fetch wrapper ----------
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    },
+    ...options
   });
-});
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status}: ${text}`);
+  }
+  return res.json();
+}
 
+// ---------- DOM helpers ----------
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const sampleBtn = document.getElementById("sampleBtn");
 const uploadStatus = document.getElementById("uploadStatus");
 const uploadProgress = document.getElementById("uploadProgress");
+
 const reportsList = document.getElementById("reportsList");
 const previewBox = document.getElementById("previewBox");
-const refreshReports = document.getElementById("refreshReports");
 
 const chatWindow = document.getElementById("chatWindow");
 const chatForm = document.getElementById("chatForm");
@@ -51,337 +46,351 @@ const riskBox = document.getElementById("riskBox");
 const extractMetricsBtn = document.getElementById("extractMetricsBtn");
 const metricsBox = document.getElementById("metricsBox");
 
-function setUploadingState(isUploading) {
-  uploadBtn.disabled = isUploading;
-  sampleBtn.disabled = isUploading;
-  uploadStatus.textContent = isUploading ? "Analyzing..." : "";
-  uploadProgress.textContent = isUploading ? "Extracting text, indexing and preparing insights..." : "";
-}
+const refreshReportsBtn = document.getElementById("refreshReports");
 
-function appendChatBubble(sender, text, citations) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "flex flex-col gap-1";
-  const bubble = document.createElement("div");
-  const base = "max-w-[85%] px-3 py-2 rounded-2xl text-[11px] whitespace-pre-wrap";
-  if (sender === "user") {
-    wrapper.classList.add("items-end");
-    bubble.className = base + " bg-emerald-500 text-slate-950 rounded-br-sm";
-  } else {
-    wrapper.classList.add("items-start");
-    bubble.className = base + " bg-slate-800 text-slate-50 rounded-bl-sm";
-  }
-  bubble.textContent = text;
-  wrapper.appendChild(bubble);
-  if (sender === "ai" && citations && citations.length) {
-    const cites = document.createElement("div");
-    cites.className = "flex flex-wrap gap-1 mt-0.5";
-    citations.forEach(c => {
-      const chip = document.createElement("div");
-      chip.className = "px-2 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[10px] text-slate-300";
-      chip.textContent = `${c.report_name} · p.${c.page}`;
-      chip.title = c.snippet;
-      cites.appendChild(chip);
+// ---------- Tabs ----------
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabChat = document.getElementById("tab-chat");
+const tabSummary = document.getElementById("tab-summary");
+const tabMetrics = document.getElementById("tab-metrics");
+
+tabButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    tabButtons.forEach(b => {
+      b.classList.remove("border-emerald-400", "text-emerald-300");
+      b.classList.add("text-slate-400");
     });
-    wrapper.appendChild(cites);
-  }
-  chatWindow.appendChild(wrapper);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
+    btn.classList.add("border-emerald-400", "text-emerald-300");
+    btn.classList.remove("text-slate-400");
 
-async function fetchReports() {
+    const tab = btn.getAttribute("data-tab");
+    tabChat.classList.toggle("hidden", tab !== "chat");
+    tabSummary.classList.toggle("hidden", tab !== "summary");
+    tabMetrics.classList.toggle("hidden", tab !== "metrics");
+  });
+});
+
+// ---------- Reports list ----------
+async function loadReports() {
   try {
-    const res = await fetch(API_BASE + "/api/reports");
-    const data = await res.json();
-    renderReports(data.reports || []);
-  } catch (e) {
-    console.error(e);
+    const data = await apiFetch("/api/reports");
+    reportsCache = data.reports || [];
+    renderReportsList();
+  } catch (err) {
+    console.error(err);
+    reportsList.innerHTML = `<div class="text-red-400 text-[11px]">Failed to load reports</div>`;
   }
 }
 
-function renderReports(reports) {
+function renderReportsList() {
   reportsList.innerHTML = "";
-  if (!reports.length) {
-    reportsList.innerHTML = '<div class="text-[11px] text-slate-500">No reports yet. Upload or try the sample.</div>';
+
+  if (!reportsCache.length) {
+    reportsList.innerHTML = `<div class="text-slate-500 text-[11px]">No reports uploaded yet.</div>`;
     return;
   }
-  reports.forEach(r => {
-    const label = document.createElement("label");
-    label.className = "flex items-center gap-2 cursor-pointer hover:bg-slate-800/80 px-2 py-1 rounded-xl";
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "report";
-    input.value = r.id;
-    input.className = "accent-emerald-500";
-    input.addEventListener("change", () => {
-      selectedReportId = r.id;
-      loadPreview(r.id);
+
+  reportsCache.forEach(report => {
+    const btn = document.createElement("button");
+    btn.className =
+      "w-full text-left px-2 py-1 rounded-lg hover:bg-slate-800/70 flex flex-col border border-transparent text-[11px]";
+    if (report.id === selectedReportId) {
+      btn.classList.add("bg-slate-800", "border-emerald-500/40");
+    }
+    btn.innerHTML = `
+      <div class="font-semibold text-slate-100">${report.name}</div>
+      <div class="text-[10px] text-slate-400">Pages: ${report.pages ?? "?"}</div>
+    `;
+    btn.addEventListener("click", () => {
+      selectedReportId = report.id;
+      renderReportsList();
+      loadPreview(report.id);
+      setActionButtonsDisabled(false);
     });
-    const text = document.createElement("div");
-    text.className = "flex-1 flex flex-col";
-    const name = document.createElement("div");
-    name.className = "text-[11px] truncate";
-    name.textContent = r.name;
-    const meta = document.createElement("div");
-    meta.className = "text-[10px] text-slate-500";
-    meta.textContent = `Pages (approx): ${r.pages} · Uploaded: ${new Date(r.uploaded_at).toLocaleString()}`;
-    text.appendChild(name);
-    text.appendChild(meta);
-    label.appendChild(input);
-    label.appendChild(text);
-    reportsList.appendChild(label);
+    reportsList.appendChild(btn);
   });
 }
 
 async function loadPreview(reportId) {
   previewBox.textContent = "Loading preview...";
   try {
-    const res = await fetch(`${API_BASE}/api/reports/${reportId}/preview`);
-    const data = await res.json();
+    const data = await apiFetch(`/api/reports/${encodeURIComponent(reportId)}/preview`);
     previewBox.textContent = data.preview_text || "No preview text available.";
-  } catch (e) {
+  } catch (err) {
+    console.error(err);
     previewBox.textContent = "Failed to load preview.";
   }
 }
 
-fileInput.addEventListener("click", () => {
-  fileInput.value = "";
-});
+function setActionButtonsDisabled(disabled) {
+  generateSummaryBtn.disabled = disabled;
+  downloadSummaryBtn.disabled = disabled || !summaryBox.textContent.trim();
+  runComplianceBtn.disabled = disabled;
+  runRiskBtn.disabled = disabled;
+  extractMetricsBtn.disabled = disabled;
+}
 
+// ---------- Upload handling ----------
 uploadBtn.addEventListener("click", async () => {
   if (!fileInput.files.length) {
-    alert("Please choose at least one ESG report file (PDF or text).");
+    alert("Please select at least one ESG report (PDF or .txt)");
     return;
   }
+
   const formData = new FormData();
-  for (const f of fileInput.files) formData.append("files", f);
-  setUploadingState(true);
+  Array.from(fileInput.files).forEach(file => {
+    formData.append("files", file);
+  });
+
+  uploadBtn.disabled = true;
+  uploadStatus.textContent = "Uploading...";
+  uploadProgress.textContent = "";
+
   try {
-    const res = await fetch(API_BASE + "/api/reports", { method: "POST", body: formData });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Upload failed");
-    uploadProgress.textContent = "Indexed successfully. You can now chat, summarize, or extract metrics.";
-    fetchReports();
-  } catch (e) {
-    console.error(e);
-    alert("Upload failed: " + e.message);
+    const res = await fetch(API_BASE + "/api/reports", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+    const data = await res.json();
+    uploadStatus.textContent = "Done ✓";
+    uploadProgress.textContent = `Indexed ${data.reports.length} report(s).`;
+
+    reportsCache = data.reports;
+    renderReportsList();
+  } catch (err) {
+    console.error(err);
+    uploadStatus.textContent = "Error";
+    uploadProgress.textContent = "Upload failed.";
+    alert("Upload failed. Check console for details.");
   } finally {
-    setUploadingState(false);
+    uploadBtn.disabled = false;
   }
 });
 
 sampleBtn.addEventListener("click", async () => {
-  setUploadingState(true);
+  sampleBtn.disabled = true;
+  sampleBtn.textContent = "Loading sample...";
   try {
-    const res = await fetch(API_BASE + "/api/sample-report", { method: "POST" });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Failed to load sample");
-    uploadProgress.textContent = "Sample report loaded. Select it and start exploring.";
-    fetchReports();
-  } catch (e) {
-    console.error(e);
-    alert("Could not load sample report: " + e.message);
+    const data = await apiFetch("/api/sample-report", { method: "POST" });
+    uploadStatus.textContent = "Sample loaded ✓";
+    reportsCache = data.reports;
+    renderReportsList();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load sample report.");
   } finally {
-    setUploadingState(false);
+    sampleBtn.disabled = false;
+    sampleBtn.textContent = "Try with sample ESG report";
   }
 });
 
-refreshReports.addEventListener("click", fetchReports);
+refreshReportsBtn.addEventListener("click", loadReports);
+
+// ---------- Chat ----------
+function appendChatBubble(sender, text) {
+  const div = document.createElement("div");
+  div.className = "rounded-xl px-3 py-2 max-w-[90%] text-[11px] whitespace-pre-wrap";
+  if (sender === "user") {
+    div.classList.add("bg-emerald-500/10", "border", "border-emerald-500/40", "ml-auto");
+  } else {
+    div.classList.add("bg-slate-900", "border", "border-slate-700");
+  }
+  div.textContent = text;
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
 
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const question = chatInput.value.trim();
   if (!question) return;
   if (!selectedReportId) {
-    alert("Please select a report first.");
+    alert("Select or upload a report first.");
     return;
   }
+
   appendChatBubble("user", question);
   chatInput.value = "";
-  const thinkingBubbleId = "thinking-bubble";
-  appendChatBubble("ai", "Thinking...", []);
+
+  appendChatBubble("assistant", "Thinking...");
   const thinkingBubble = chatWindow.lastChild;
+
   try {
-    const res = await fetch(API_BASE + "/api/query", {
+    const data = await apiFetch("/api/query", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, report_ids: [selectedReportId], top_k: 8 }),
+      body: JSON.stringify({
+        question,
+        report_ids: [selectedReportId],
+        top_k: 8
+      })
     });
-    const data = await res.json().catch(() => ({}));
-    chatWindow.removeChild(thinkingBubble);
-    if (!res.ok) throw new Error(data.detail || "Query failed");
-    appendChatBubble("ai", data.answer || "No answer.", data.citations || []);
-  } catch (e2) {
-    console.error(e2);
-    chatWindow.removeChild(thinkingBubble);
-    appendChatBubble("ai", "Something went wrong answering that question: " + e2.message);
+
+    thinkingBubble.textContent = data.answer || "No answer returned.";
+
+    if (data.citations && data.citations.length) {
+      const cit = document.createElement("div");
+      cit.className = "text-[10px] text-slate-400 mt-1";
+      cit.textContent =
+        "Citations: " +
+        data.citations
+          .map(c => `${c.report_name} (p.${c.page})`)
+          .join(" • ");
+      chatWindow.appendChild(cit);
+    }
+  } catch (err) {
+    console.error(err);
+    thinkingBubble.textContent = "Error calling ESG chat API.";
   }
 });
 
+// ---------- Summary + PDF ----------
 generateSummaryBtn.addEventListener("click", async () => {
   if (!selectedReportId) {
-    alert("Please select a report first.");
+    alert("Select or upload a report first.");
     return;
   }
-  generateSummaryBtn.disabled = true;
-  summaryBox.textContent = "Generating executive summary...";
+  summaryBox.textContent = "Generating summary...";
   try {
-    const res = await fetch(API_BASE + "/api/summary", {
+    const data = await apiFetch("/api/summary", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_id: selectedReportId }),
+      body: JSON.stringify({ report_id: selectedReportId })
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Failed to generate summary");
-    currentSummaryText = data.summary_md || "";
-    summaryBox.textContent = currentSummaryText || "No summary returned.";
-    downloadSummaryBtn.disabled = !currentSummaryText;
-  } catch (e) {
-    console.error(e);
-    summaryBox.textContent = "Failed to generate summary: " + e.message;
-  } finally {
-    generateSummaryBtn.disabled = false;
+    summaryBox.textContent = data.summary_md || "No summary generated.";
+    downloadSummaryBtn.disabled = false;
+  } catch (err) {
+    console.error(err);
+    summaryBox.textContent = "Failed to generate summary.";
   }
 });
 
 downloadSummaryBtn.addEventListener("click", () => {
-  if (!currentSummaryText) return;
+  if (!summaryBox.textContent.trim()) return;
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const margins = 14;
-  const lines = doc.splitTextToSize(currentSummaryText, 180);
-  let y = margins;
-  lines.forEach(line => {
-    if (y > 280) {
-      doc.addPage();
-      y = margins;
-    }
-    doc.text(line, margins, y);
-    y += 5;
-  });
+  const lines = doc.splitTextToSize(summaryBox.textContent, 180);
+  doc.text(lines, 10, 10);
   doc.save("esg_summary.pdf");
 });
 
+// ---------- Compliance ----------
 runComplianceBtn.addEventListener("click", async () => {
   if (!selectedReportId) {
-    alert("Please select a report first.");
+    alert("Select or upload a report first.");
     return;
   }
-  runComplianceBtn.disabled = true;
-  complianceBox.innerHTML = '<p class="text-slate-400">Running compliance check...</p>';
+  complianceBox.innerHTML = `<div class="text-slate-400">Running compliance check...</div>`;
   try {
-    const res = await fetch(API_BASE + "/api/compliance", {
+    const data = await apiFetch("/api/compliance", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_id: selectedReportId }),
+      body: JSON.stringify({ report_id: selectedReportId })
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Compliance check failed");
-    const comp = data.compliance || {};
+
+    const c = data.compliance || {};
     const items = [
-      ["sdgs", "UN SDGs"],
-      ["gri", "GRI"],
-      ["sasb", "SASB"],
-      ["ifrs_s1", "IFRS S1"],
-      ["ifrs_s2", "IFRS S2"],
+      ["SDGs", c.sdgs],
+      ["GRI", c.gri],
+      ["SASB", c.sasb],
+      ["IFRS S1", c.ifrs_s1],
+      ["IFRS S2", c.ifrs_s2]
     ];
+
     complianceBox.innerHTML = "";
-    items.forEach(([key, label]) => {
+    items.forEach(([label, obj]) => {
+      if (!obj) return;
       const row = document.createElement("div");
-      row.className = "flex items-start justify-between gap-2 border-b border-slate-800/60 py-1";
-      const left = document.createElement("div");
-      left.className = "flex-1";
-      const title = document.createElement("div");
-      title.className = "font-semibold text-[11px]";
-      title.textContent = label;
-      const notes = document.createElement("div");
-      notes.className = "text-[11px] text-slate-400";
-      notes.textContent = comp[key]?.notes || "No notes.";
-      left.appendChild(title);
-      left.appendChild(notes);
-      const badge = document.createElement("span");
-      const covered = !!comp[key]?.covered;
-      badge.className =
-        "px-2 py-0.5 rounded-full text-[10px] border " +
-        (covered
-          ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/50"
-          : "bg-slate-900 text-slate-300 border-slate-600");
-      badge.textContent = covered ? "Covered" : "Not clear";
-      row.appendChild(left);
-      row.appendChild(badge);
+      row.className =
+        "flex items-start justify-between gap-2 border-b border-slate-800/80 pb-1 mb-1";
+      row.innerHTML = `
+        <div class="font-semibold text-slate-100">${label}</div>
+        <div class="text-right text-[11px]">
+          <div class="${obj.covered ? "text-emerald-300" : "text-slate-300"}">
+            ${obj.covered ? "Covered" : "Not clearly covered"}
+          </div>
+          <div class="text-slate-400 mt-0.5 whitespace-pre-wrap">
+            ${obj.notes || ""}
+          </div>
+        </div>
+      `;
       complianceBox.appendChild(row);
     });
-  } catch (e) {
-    console.error(e);
-    complianceBox.innerHTML = '<p class="text-red-400 text-[11px]">Error: ' + e.message + "</p>";
-  } finally {
-    runComplianceBtn.disabled = false;
+
+    if (!complianceBox.innerHTML.trim()) {
+      complianceBox.innerHTML = `<div class="text-slate-400 text-[11px]">No compliance info returned.</div>`;
+    }
+  } catch (err) {
+    console.error(err);
+    complianceBox.innerHTML = `<div class="text-red-400 text-[11px]">Failed to run compliance check.</div>`;
   }
 });
 
+// ---------- Risk (greenwashing) ----------
 runRiskBtn.addEventListener("click", async () => {
   if (!selectedReportId) {
-    alert("Please select a report first.");
+    alert("Select or upload a report first.");
     return;
   }
-  runRiskBtn.disabled = true;
-  riskBox.innerHTML = '<p class="text-slate-400 text-[11px]">Assessing risk...</p>';
+  riskBox.innerHTML =
+    `<p class="text-slate-400 text-[11px]">Assessing greenwashing risk...</p>`;
   try {
-    const res = await fetch(API_BASE + "/api/risk", {
+    const data = await apiFetch("/api/risk", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_id: selectedReportId }),
+      body: JSON.stringify({ report_id: selectedReportId })
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Risk assessment failed");
-    const score = (data.score || "Medium").toLowerCase();
-    const expl = data.explanation || "";
-    let colorClass = "bg-amber-500/10 text-amber-300 border-amber-500/60";
-    if (score === "low") colorClass = "bg-emerald-500/10 text-emerald-300 border-emerald-500/60";
-    else if (score === "high") colorClass = "bg-red-500/10 text-red-300 border-red-500/60";
+
     riskBox.innerHTML = "";
-    const row = document.createElement("div");
-    row.className = "space-y-1";
+    const badgeColor =
+      data.score === "High"
+        ? "bg-red-500/20 text-red-300 border-red-500/50"
+        : data.score === "Medium"
+        ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
+        : "bg-emerald-500/20 text-emerald-300 border-emerald-500/50";
+
     const badge = document.createElement("div");
     badge.className =
-      "inline-flex items-center gap-1 px-3 py-1 rounded-full border text-[11px] font-semibold " +
-      colorClass;
-    badge.textContent = "Greenwashing risk: " + (score.charAt(0).toUpperCase() + score.slice(1));
-    const notes = document.createElement("div");
-    notes.className = "text-[11px] text-slate-200";
-    notes.textContent = expl;
-    row.appendChild(badge);
-    row.appendChild(notes);
-    riskBox.appendChild(row);
-  } catch (e) {
-    console.error(e);
-    riskBox.innerHTML = '<p class="text-red-400 text-[11px]">Error: ' + e.message + "</p>";
-  } finally {
-    runRiskBtn.disabled = false;
+      "inline-flex items-center gap-2 px-2 py-1 rounded-full border text-[11px] " +
+      badgeColor;
+    badge.innerHTML = `<span class="font-semibold">Greenwashing risk:</span> ${data.score}`;
+    const expl = document.createElement("p");
+    expl.className = "mt-2 text-[11px] text-slate-200 whitespace-pre-wrap";
+    expl.textContent = data.explanation || "";
+
+    riskBox.appendChild(badge);
+    riskBox.appendChild(expl);
+  } catch (err) {
+    console.error(err);
+    riskBox.innerHTML =
+      `<p class="text-red-400 text-[11px]">Failed to assess greenwashing risk.</p>`;
   }
 });
 
+// ---------- Metrics ----------
 extractMetricsBtn.addEventListener("click", async () => {
   if (!selectedReportId) {
-    alert("Please select a report first.");
+    alert("Select or upload a report first.");
     return;
   }
-  extractMetricsBtn.disabled = true;
   metricsBox.textContent = "Extracting metrics...";
   try {
-    const res = await fetch(API_BASE + "/api/metrics", {
+    const data = await apiFetch("/api/metrics", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_id: selectedReportId }),
+      body: JSON.stringify({ report_id: selectedReportId })
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || "Metrics extraction failed");
-    metricsBox.textContent = JSON.stringify(data.metrics || {}, null, 2);
-  } catch (e) {
-    console.error(e);
-    metricsBox.textContent = "Error: " + e.message;
-  } finally {
-    extractMetricsBtn.disabled = false;
+
+    metricsBox.textContent = JSON.stringify(data.metrics, null, 2);
+  } catch (err) {
+    console.error(err);
+    metricsBox.textContent = "Failed to extract metrics.";
   }
 });
 
-fetchReports();
+// ---------- Init ----------
+window.addEventListener("load", async () => {
+  setActionButtonsDisabled(true);
+  await loadReports();
+});
