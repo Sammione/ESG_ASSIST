@@ -1,0 +1,91 @@
+
+:root {
+  --esg-accent: #22c55e;
+  --esg-accent-soft: rgba(34, 197, 94, 0.12);
+  --esg-border-soft: rgba(148, 163, 184, 0.45);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.18), transparent 55%),
+    #020617;
+}
+
+/* glassy cards */
+.glass-panel {
+  backdrop-filter: blur(16px);
+}
+
+/* subtle card shadow */
+.shadow-soft {
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.85);
+}
+
+/* live chip glow */
+.chip-live {
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.55);
+}
+
+/* report dropzone hover */
+.file-drop {
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
+}
+
+.file-drop:hover {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+  transform: translateY(-1px);
+}
+
+/* custom scrollbars */
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 999px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.9);
+}
+
+/* firefox */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.9) transparent;
+}
+
+/* tab hover bottom border animation */
+.tab-btn {
+  position: relative;
+  transition: color 140ms ease;
+}
+
+.tab-btn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, #22c55e, #38bdf8);
+  transition: width 160ms ease;
+}
+
+.tab-btn:hover::after {
+  width: 100%;
+}
