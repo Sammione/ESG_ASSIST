@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 import google.generativeai as genai
 import faiss
+import numpy as np
 from pypdf import PdfReader
 
 
@@ -29,6 +30,39 @@ GEN_MODEL = "models/gemini-2.5-flash"
 EMBED_MODEL = "models/text-embedding-004"
 
 gen_model = genai.GenerativeModel(GEN_MODEL)
+
+
+# ---------------------------
+# Utility: robust JSON parsing
+# ---------------------------
+def parse_strict_json(raw: str) -> Any:
+    """
+    Try to robustly parse JSON that may be wrapped in ```json ... ``` fences
+    or have extra explanation around it.
+    """
+    s = raw.strip()
+
+    # Strip markdown code fences if present
+    if s.startswith("```"):
+        # Remove leading ``` or ```json
+        if s.lower().startswith("```json"):
+            s = s[7:]  # len("```json") = 7
+        else:
+            s = s[3:]  # len("```") = 3
+
+        # Remove trailing ```
+        if s.endswith("```"):
+            s = s[:-3]
+
+    s = s.strip()
+
+    # As an extra safety net: take content between first { and last }
+    first = s.find("{")
+    last = s.rfind("}")
+    if first != -1 and last != -1 and last > first:
+        s = s[first:last + 1]
+
+    return json.loads(s)
 
 
 # ---------------------------
@@ -102,7 +136,6 @@ class ESGIndex:
         embeddings = self._embed_texts(texts)
         self._init_index_if_needed(embeddings[0])
 
-        import numpy as np
         vecs = np.array(embeddings, dtype="float32")
         self.index.add(vecs)
 
@@ -137,7 +170,6 @@ class ESGIndex:
 
         q_emb = self._embed_text(query)
 
-        import numpy as np
         q_vec = np.array([q_emb], dtype="float32")
         search_k = max(top_k * 3, top_k)
         distances, indices = self.index.search(q_vec, search_k)
@@ -486,7 +518,7 @@ def extract_metrics(req: MetricsRequest):
     try:
         resp = gen_model.generate_content(prompt)
         raw = resp.text.strip()
-        metrics = json.loads(raw)
+        metrics = parse_strict_json(raw)
     except json.JSONDecodeError:
         metrics = {"raw": resp.text}
     except Exception as e:
@@ -531,7 +563,7 @@ def compliance_check(req: ComplianceRequest):
     try:
         resp = gen_model.generate_content(prompt)
         raw = resp.text.strip()
-        compliance = json.loads(raw)
+        compliance = parse_strict_json(raw)
     except json.JSONDecodeError:
         compliance = {"raw": resp.text}
     except Exception as e:
@@ -565,7 +597,7 @@ def greenwashing_risk(req: RiskRequest):
     try:
         resp = gen_model.generate_content(prompt)
         raw = resp.text.strip()
-        data = json.loads(raw)
+        data = parse_strict_json(raw)
         score = str(data.get("score", "Medium"))
         explanation = str(data.get("explanation", ""))
     except json.JSONDecodeError:
